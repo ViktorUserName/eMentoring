@@ -3,12 +3,7 @@ from rest_framework import serializers
 from api.models import Course, TeacherSelection, Lesson, Hometask, HometaskSubmission, TeacherProfile, User, \
     StudentProfile
 
-
-class TeacherSelectionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = TeacherSelection
-        fields = '__all__'
-
+# ======USER
 
 class TeacherReadSerializer(serializers.ModelSerializer):
     teacher_name = serializers.PrimaryKeyRelatedField(source='user.username', read_only=True)
@@ -17,14 +12,50 @@ class TeacherReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = TeacherProfile
         fields = ('id', 'teacher_name', 'bio', 'course_name')
-        # fields = '__all__'
 
-class TeacherCreateSerializer(serializers.ModelSerializer):
+class StudentReadSerializer(serializers.ModelSerializer):
+    class TeacherSelectionReadSerializer(serializers.ModelSerializer):
+        course_name = serializers.CharField(source='course.name', read_only=True)
+        teacher_name = serializers.CharField(source='teacher.user.username', read_only=True)
+
+        class Meta:
+            model = TeacherSelection
+            fields = ('id', 'course_name', 'teacher_name')
+
+    student_name = serializers.PrimaryKeyRelatedField(source='user.username', read_only=True)
+    teacher_selections = TeacherSelectionReadSerializer(many=True, read_only=True)
+
     class Meta:
-        model = TeacherProfile
-        fields = '__all__'
+        model = StudentProfile
+        fields = ('id', 'student_name', 'teacher_selections' )
 
+# =========
 
+# ===== Выбор учителя
+class TeacherSelectionCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TeacherSelection
+        fields = ('teacher',)
+
+    def create(self, validated_data):
+        student = self.context['request'].user.studentprofile
+        teacher = validated_data['teacher']
+        course = teacher.course
+        return TeacherSelection.objects.create(
+            student=student,
+            teacher=teacher,
+            course=course,
+        )
+
+    def validate(self, attrs):
+        teacher = attrs['teacher']
+        course = teacher.course
+        if not course:
+            raise serializers.ValidationError('У учителя не назначен курс')
+
+        return attrs
+
+# =======
 
 class CourseSerializer(serializers.ModelSerializer):
     teachers = serializers.SerializerMethodField()

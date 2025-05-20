@@ -2,13 +2,29 @@ POST http://127.0.0.1:8001/api/sign-in HTTP/1.1
 Content-Type: application/json
 
 {
-  "username": "tstudent12",
+  "username": "test123123",
   "password": "teacher12",
-  "role": "teacher",
-  "course": 2
+  "role": "student"
 }
+###
+POST http://127.0.0.1:8001/auth/sign-in/ HTTP/1.1
+Content-Type: application/json
 
+{
+  "username": "test123123",
+  "password": "teacher12"
+}
 ###
 GET http://127.0.0.1:8001/api/user-info HTTP/1.1
 Content-Type: application/json
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ3Nzc1MjkzLCJpYXQiOjE3NDc3NzQ5OTMsImp0aSI6IjA2YTJhODEwYjI4ZjRlZjFhOTIzZGEwNWM4YjgwNDhkIiwidXNlcl9pZCI6M30.TWAidROBxcK03QbvooxDZ8BNwLTGbslwZahHjvhguzs
+
+###
+POST http://127.0.0.1:8001/api/teacher-selection
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNzQ3NzgwMjk0LCJpYXQiOjE3NDc3Nzk5OTQsImp0aSI6IjY1ZTUwNmQ5MjUyYzQyNGViNmRhOTBjMmRlNzdiZTkwIiwidXNlcl9pZCI6OX0.9nh1ytmwO_DI8hZS0CEU0UiGlenZqqwKbFWCTa8jzbQ
+Content-Type: application/json
+
+{
+  "course": 2,
+  "teacher": 1
+}
