@@ -1,8 +1,17 @@
+from django.template.context_processors import request
 from rest_framework import serializers
 
 from api.models import Course, TeacherSelection, Lesson, Hometask, HometaskSubmission, TeacherProfile, User, \
     StudentProfile
 
+
+class LessonReadSerializer(serializers.ModelSerializer):
+    student_name = serializers.CharField(source='student.user.username', read_only=True)
+    teacher_name = serializers.CharField(source='teacher.user.username', read_only=True)
+
+    class Meta:
+        model = Lesson
+        fields = ('id', 'name', 'student_name', 'teacher_name')
 # ======USER
 
 class TeacherReadSerializer(serializers.ModelSerializer):
@@ -24,14 +33,18 @@ class StudentReadSerializer(serializers.ModelSerializer):
 
     student_name = serializers.PrimaryKeyRelatedField(source='user.username', read_only=True)
     teacher_selections = TeacherSelectionReadSerializer(many=True, read_only=True)
+    lessons = LessonReadSerializer(many=True, read_only=True)
+
 
     class Meta:
         model = StudentProfile
-        fields = ('id', 'student_name', 'teacher_selections' )
+        fields = ('id', 'student_name', 'teacher_selections', 'lessons')
 
 # =========
 
 # ===== Выбор учителя
+
+
 class TeacherSelectionCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = TeacherSelection
@@ -68,10 +81,29 @@ class CourseSerializer(serializers.ModelSerializer):
     def get_teachers(self, obj):
         return [teacher.user.username for teacher in obj.teachers.all()]
 
-class LessonSerializer(serializers.ModelSerializer):
+
+# =========== Уроки и Дз
+
+
+
+
+class LessonCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lesson
-        fields = '__all__'
+        fields = ('name','student')
+
+    def validate(self, attrs):
+        request = self.context.get('request')
+        teacher_profile = request.user.teacher_profile
+        student = attrs['student']
+
+        if not TeacherSelection.objects.filter(teacher=teacher_profile, student=student).exists():
+            raise serializers.ValidationError('Этот препод не назначен студенту')
+        return attrs
+
+    def create(self, validated_data):
+        teacher_profile = self.context['request'].user.teacher_profile
+        return Lesson.objects.create(teacher=teacher_profile, **validated_data)
 
 class HometaskSerializer(serializers.ModelSerializer):
     class Meta:

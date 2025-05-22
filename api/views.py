@@ -6,10 +6,11 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from yaml import serialize
 
-from api.models import Course, TeacherSelection, TeacherProfile, StudentProfile
+from api.models import Course, TeacherSelection, TeacherProfile, StudentProfile, Lesson
 from api.serializers import CourseSerializer, \
     TeacherReadSerializer, UserApiSerializer, RegisterSerializer, StudentReadSerializer, \
-    TeacherSelectionCreateSerializer
+    TeacherSelectionCreateSerializer, LessonReadSerializer, LessonCreateSerializer
+from api.utils.permissions import IsTeacher
 
 
 # =====================USERS VIEWS
@@ -29,14 +30,26 @@ class TeacherSelectionCreateAPIView(generics.CreateAPIView):
     def get_queryset(self):
         return TeacherSelection.objects.filter(student=self.request.user.student_profile)
 # ====================================
+# ===== Курсы уроки и дз ======
+
+
 class CourseViewSet(viewsets.ModelViewSet):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
 
-# class TeacherSelectorViewSet(viewsets.ModelViewSet):
-#     queryset = TeacherSelection.objects.all()
-#     serializer_class = TeacherSelectionSerializer
+class LessonViewSet(viewsets.ModelViewSet):
+    queryset = Lesson.objects.all()
+    serializer_class = LessonReadSerializer
 
+    def get_permissions(self):
+        if self.action == 'create':
+            permission_classes = (IsTeacher())
+        return super().get_permissions()
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return LessonCreateSerializer
+        return super().get_serializer_class()
 
 # -----USERS/Reg
 

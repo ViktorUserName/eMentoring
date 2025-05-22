@@ -3,7 +3,7 @@ from django.urls import path, include
 
 from api.utils.router import CustomRouter
 from api.views import CourseViewSet, TeacherViewSet, UserAPIView, UserRegisterView, \
-    StudentViewSet, TeacherSelectionCreateAPIView
+    StudentViewSet, TeacherSelectionCreateAPIView, LessonViewSet
 
 router = CustomRouter(custom_routes={
     'user-info': 'user-info',
@@ -14,6 +14,7 @@ router.register(r'courses', CourseViewSet, basename='courses')
 router.register(r'teachers', TeacherViewSet, basename='teachers')
 # router.register(r'select', TeacherSelectorViewSet, basename='select')
 router.register(r'student', StudentViewSet, basename='student')
+router.register(r'lessons', LessonViewSet, basename='lessons')
 
 
 urlpatterns = [
